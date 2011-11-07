@@ -101,9 +101,11 @@ public class HiveJdbcClient {
 		    		
 		    		// Get column definitions from the Hive resultset...
 				    List<OracleTableColumn> oracleColumns = getOracleTableColumnsForHiveResults(hiveResultSet);
-				    
-				    // Create an Oracle table based on the columns in the Hive resultset...
-		    		createOracleTableWithRetry(opts, oracleColumns, oracleConnection);	//<- Lets the user retry this if it fails. 
+
+				    if (opts.exportMode.equals(Constants.ExportMode.CREATE)) {
+				    	// Create an Oracle table based on the columns in the Hive resultset...
+				    	createOracleTableWithRetry(opts, oracleColumns, oracleConnection);	//<- Lets the user retry this if it fails.
+				    }
 				    
 		    		// Generate the Oracle insert statement...
 				    String insertSql = generateOracleInsertStatement(opts, oracleColumns);
@@ -211,6 +213,8 @@ public class HiveJdbcClient {
 		  processGeneralOption(conf, line, Constants.CONF_ORACLE_INSERT_BATCH_SIZE);
 		  processGeneralOption(conf, line, Constants.CONF_ORACLE_INSERT_COMMIT_BATCH_COUNT);
 		  
+		  processGeneralOption(conf, line, Constants.CONF_EXPORT_MODE);
+		  
 			
 		  if(line.hasOption(Constants.CONF_LOG4J_PROPERTIES_FILE)) {
 			  String value = line.getOptionValue(Constants.CONF_LOG4J_PROPERTIES_FILE);
@@ -288,6 +292,11 @@ public class HiveJdbcClient {
 
 	    // ORACLE
 	    
+	    Option exportMode = OptionBuilder.withArgName("export-mode")
+	    .hasArg()
+	    .withDescription("Export mode to run (create or insert)")
+	    .create(Constants.CONF_EXPORT_MODE);
+	    
 	    Option oracleTable = OptionBuilder.withArgName("oracle-table")
 	    .hasArg()
 	    .withDescription("The name of the Oracle to create")
@@ -313,6 +322,7 @@ public class HiveJdbcClient {
 	    .withDescription("The number of batch-inserts to perform before performing an Oracle commit")
 	    .create(Constants.CONF_ORACLE_INSERT_COMMIT_BATCH_COUNT);		    
 	    
+	    opts.addOption(exportMode);
 	    opts.addOption(oracleTable);
 	    opts.addOption(oracleSchema);
 	    opts.addOption(oracleTablespace);	
@@ -390,6 +400,16 @@ public class HiveJdbcClient {
 		
 		result.insertBatchSize = conf.getInt(Constants.CONF_ORACLE_INSERT_BATCH_SIZE, Constants.DEFAULT_ORACLE_INSERT_BATCH_SIZE);
 		result.commitBatchCount = conf.getInt(Constants.CONF_ORACLE_INSERT_COMMIT_BATCH_COUNT, Constants.DEFAULT_ORACLE_INSERT_COMMIT_BATCH_COUNT);
+		
+		String exportModeStr = conf.get(Constants.CONF_EXPORT_MODE);
+		if (exportModeStr != null) {
+			try {
+				result.exportMode = Constants.ExportMode.valueOf(exportModeStr.trim().toUpperCase());
+			} catch(IllegalArgumentException e) {
+				LOG.error("Invalid export mode specified.", e);
+				throw new IllegalArgumentException("Invalid export mode specified.",e);
+			}
+		}
 		
 		result.hql = conf.get(Constants.CONF_HIVE_QUERY);
 		if(result.hql == null || result.hql.trim().isEmpty()) {

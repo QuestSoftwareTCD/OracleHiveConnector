@@ -16,6 +16,8 @@
 
 package com.quest.orahive;
 
+import com.quest.orahive.Constants.ExportMode;
+
 public class OraHiveOptions {
 
 	public String hiveJdbcUrl;
@@ -30,6 +32,7 @@ public class OraHiveOptions {
 	public String oracleTable;
 	public String oracleTablespace;
 
+	public ExportMode exportMode;
 	public String hql;
 	
 	public int insertBatchSize;
@@ -39,5 +42,6 @@ public class OraHiveOptions {
 		
 		this.insertBatchSize = Constants.DEFAULT_ORACLE_INSERT_BATCH_SIZE;
 		this.commitBatchCount = Constants.DEFAULT_ORACLE_INSERT_COMMIT_BATCH_COUNT;
+		this.exportMode = Constants.DEFAULT_EXPORT_MODE;
 	}
 }

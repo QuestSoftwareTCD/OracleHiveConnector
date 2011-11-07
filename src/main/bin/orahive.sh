@@ -37,6 +37,9 @@
 #                       file.  This parameter is provided for convenience so that different tables can be 
 #                       populated without constantly changing the configuration.
 #
+#   -e <export_mode>    Export mode to run. Either create or insert. By default will run create which will
+#                       create a new table. Insert will insert into an existing table.
+#
 #   -q <hql_file>       The path of a Hive Query Language script file to execute. If this is parameter is
 #                       not specified on the command line then it defaults to "hql.txt" in the current
 #                       directory.  This parameter is ignored if <hql_statement> is specified.
@@ -65,7 +68,7 @@ unset OVERIDE_TABLE_NAME
 ###
 
 set -f
-set -- `getopt "c:q:t:vh" "$@"`
+set -- `getopt "c:q:t:e:vh" "$@"`
 set +f
 while [ "$1" ]; do
 	case "$1" in
@@ -78,6 +81,9 @@ while [ "$1" ]; do
 		-t)
 			OVERIDE_TABLE_NAME=$2
 			shift 2;;
+		-e)
+			EXPORT_MODE=$2
+			shift 2;;
 		-v)
 			VERBOSE="true"
 			shift;;
@@ -85,7 +91,7 @@ while [ "$1" ]; do
 			shift
 			break;;
 		*)
-			sed -n '17,48s/^#//p' $0
+			sed -n '17,51s/^#//p' $0
 			exit -1;;
 	esac
 done
@@ -186,7 +192,7 @@ REDIRECT_STDERR="2>/dev/null"
 ORAHIVE_COMMAND="java -cp \"$CP\" com.quest.orahive.HiveJdbcClient \
 	-hive $HIVE_URL -hiveuser $HIVE_USER ${HIVE_PASSWORD:+-hivepassword ${HIVE_PASSWORD}} -hqlfile $HQL_FILE \
 	-oracle $ORACLE_URL -oracleuser $ORACLE_USER ${ORACLE_PASSWORD:+-oraclepassword ${ORACLE_PASSWORD}} -oracletable $ORACLE_TABLE \
-	-insertbatchsize $INSERT_BATCH_SIZE -commitbatchcount $COMMIT_BATCH_COUNT \
+	-insertbatchsize $INSERT_BATCH_SIZE -commitbatchcount $COMMIT_BATCH_COUNT ${EXPORT_MODE:+-exportmode ${EXPORT_MODE}} \
 	-log4j $ORAHIVE_HOME/log4j.txt ${REDIRECT_STDERR}"
 [ "${VERBOSE}" ] && echo "ORAHIVE COMMAND:" && echo ${ORAHIVE_COMMAND}
 eval ${ORAHIVE_COMMAND}

@@ -45,6 +45,8 @@ public class Constants {
 	public static final String CONF_ORACLE_TABLENAME = "oracletable";
 	public static final String CONF_ORACLE_TABLESPACE = "oracletablespace";
 	
+	public static final String CONF_EXPORT_MODE = "exportmode";
+	
 	public static final String CONF_ORACLE_INSERT_BATCH_SIZE = "insertbatchsize";
 	public static final int DEFAULT_ORACLE_INSERT_BATCH_SIZE = 500;
 	
@@ -52,5 +54,8 @@ public class Constants {
 	public static final int DEFAULT_ORACLE_INSERT_COMMIT_BATCH_COUNT = 20;
 	
 	public static final String CONF_LOG4J_PROPERTIES_FILE = "log4j";
+	
+	public static enum ExportMode {CREATE, INSERT};
+	public static final ExportMode DEFAULT_EXPORT_MODE = ExportMode.CREATE;
 	
 }
