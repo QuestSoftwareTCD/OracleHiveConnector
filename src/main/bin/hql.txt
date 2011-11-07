@@ -1,0 +1,7 @@
+SELECT cust_last_name, prod_name, SUM(quantity_sold)
+FROM sales
+	JOIN customers
+		ON (sales.cust_id = customers.cust_id)
+	JOIN products
+		ON (sales.prod_id = products.prod_id)
+GROUP BY cust_last_name, prod_name
